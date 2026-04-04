@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { type ReactNode } from 'react';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '⚡' },
@@ -11,7 +10,7 @@ const NAV_ITEMS = [
   { href: '/planning', label: 'Planning', icon: '📅' },
 ];
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default function DashboardLayout({ children }: { children?: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}

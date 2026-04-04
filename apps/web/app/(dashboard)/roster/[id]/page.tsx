@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { AthleteMetricTrend } from '../../../../components/analytics/AthleteMetricTrend';
 
@@ -13,12 +14,12 @@ export default async function AthleteProfilePage({
   return (
     <div className="p-8">
       {/* Back link */}
-      <a
+      <Link
         href="/roster"
         className="text-sm text-slate-400 hover:text-white mb-6 inline-flex items-center gap-1"
       >
         ← Back to Roster
-      </a>
+      </Link>
 
       {/* Header skeleton — replace with real data */}
       <div className="flex items-start gap-6 mb-8">

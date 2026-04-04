@@ -209,7 +209,7 @@ export class AnalyticsService {
 
     for (const [testType, values] of byType) {
       if (values.length < 3) continue;
-      const { isSignificantDrop, mean, latest, changePercent: _cp } = detectMetricDrop(values);
+      const { isSignificantDrop, mean, latest } = detectMetricDrop(values);
       if (isSignificantDrop) {
         const changePercent = ((latest - mean) / mean) * 100;
         alerts.push({

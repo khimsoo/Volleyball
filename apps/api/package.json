@@ -1,0 +1,41 @@
+{
+  "name": "@volleyball/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "db:migrate": "node --loader tsx scripts/migrate.ts",
+    "db:seed": "node --loader tsx scripts/seed.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@fastify/jwt": "^9.0.1",
+    "@fastify/rate-limit": "^10.1.1",
+    "@fastify/swagger": "^9.3.0",
+    "@fastify/swagger-ui": "^5.2.0",
+    "@supabase/supabase-js": "^2.47.10",
+    "@volleyball/types": "*",
+    "@volleyball/utils": "*",
+    "bullmq": "^5.34.7",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "ioredis": "^5.4.2",
+    "pg": "^8.13.3",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { AthleteMetricTrend } from '../../../../components/analytics/AthleteMetricTrend.js';
+import { AthleteMetricTrend } from '../../../../components/analytics/AthleteMetricTrend';
 
 export const metadata: Metadata = { title: 'Athlete Profile — VolleyTrainer' };
 

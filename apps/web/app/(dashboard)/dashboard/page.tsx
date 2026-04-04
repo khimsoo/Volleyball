@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { TeamReadinessGrid } from '../../../components/roster/TeamReadinessGrid.js';
-import { ACWRFlagPanel } from '../../../components/analytics/ACWRFlagPanel.js';
+import { TeamReadinessGrid } from '../../../components/roster/TeamReadinessGrid';
+import { ACWRFlagPanel } from '../../../components/analytics/ACWRFlagPanel';
 
 export default function DashboardPage() {
   const today = new Date().toLocaleDateString('en-US', {

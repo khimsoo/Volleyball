@@ -5,22 +5,31 @@ import { config } from '../config.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    redis: InstanceType<typeof Redis>;
+    redis: InstanceType<typeof Redis> | null;
   }
 }
 
 export default fp(async function redisPlugin(fastify: FastifyInstance) {
   const redis = new Redis(config.REDIS_URL, {
-    maxRetriesPerRequest: 3,
-    enableReadyCheck: true,
+    maxRetriesPerRequest: 1,
+    enableReadyCheck: false,
+    lazyConnect: true,
   });
 
   redis.on('error', (err) => {
-    fastify.log.error({ err }, 'Redis error');
+    fastify.log.warn({ err }, 'Redis unavailable — caching disabled');
   });
 
-  await redis.ping();
-  fastify.log.info('✅ Redis connected');
+  try {
+    await redis.connect();
+    await redis.ping();
+    fastify.log.info('✅ Redis connected');
+  } catch {
+    fastify.log.warn('⚠️  Redis not available — continuing without cache');
+    await redis.disconnect();
+    fastify.decorate('redis', null);
+    return;
+  }
 
   fastify.decorate('redis', redis);
 

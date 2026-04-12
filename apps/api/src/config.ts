@@ -24,7 +24,15 @@ const envSchema = z.object({
   CLOUDFLARE_R2_BUCKET: z.string().optional(),
 });
 
-function loadConfig() {
+export type Config = z.infer<typeof envSchema>;
+
+// Lazy singleton — validation only runs on first property access, not on import.
+// This prevents process.exit(1) from firing during Next.js or Turborepo builds
+// that transitively include this module without needing the API env vars.
+let _config: Config | null = null;
+
+function getConfig(): Config {
+  if (_config) return _config;
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
     console.error('❌ Invalid environment variables:');
@@ -33,8 +41,12 @@ function loadConfig() {
     });
     process.exit(1);
   }
-  return result.data;
+  _config = result.data;
+  return _config;
 }
 
-export const config = loadConfig();
-export type Config = typeof config;
+export const config: Config = new Proxy({} as Config, {
+  get(_t, key: string) {
+    return getConfig()[key as keyof Config];
+  },
+});

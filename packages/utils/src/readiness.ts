@@ -25,7 +25,7 @@ export function normalizeHrvScore(todayHrv: number, baselineHrv: number): number
   if (baselineHrv === 0) return 70; // no baseline → neutral
   const ratio = todayHrv / baselineHrv;
   // 1.0 = 100, 0.85 = ~50, < 0.7 = 0
-  return Math.max(0, Math.min(100, (ratio - 0.7) / 0.35 * 100));
+  return Math.max(0, Math.min(100, (ratio - 0.7) / 0.3 * 100));
 }
 
 // Sleep hours: 9h = 100, 8h = 90, 6h = 50, <5h = 0

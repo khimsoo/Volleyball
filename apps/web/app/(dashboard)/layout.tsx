@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { createSupabaseServerClient } from '@/lib/supabase';
+import LogoutButton from '@/components/LogoutButton';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '⚡' },
@@ -10,19 +13,35 @@ const NAV_ITEMS = [
   { href: '/planning', label: 'Planning', icon: '📅' },
 ];
 
-export default function DashboardLayout({ children }: { children?: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children?: React.ReactNode }) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/auth/login');
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('first_name, last_name, role, organizations(name)')
+    .eq('id', user.id)
+    .single();
+
+  const initials = profile
+    ? `${profile.first_name[0]}${profile.last_name[0]}`
+    : user.email?.[0]?.toUpperCase() ?? 'C';
+  const displayName = profile
+    ? `${profile.first_name} ${profile.last_name}`
+    : user.email ?? 'Coach';
+  const orgName =
+    profile?.organizations && !Array.isArray(profile.organizations)
+      ? (profile.organizations as { name: string }).name
+      : 'My School';
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
       <aside className="w-56 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
-        {/* Logo */}
         <div className="p-5 border-b border-slate-800">
-          <span className="text-xl font-black text-white tracking-tight">
-            🏐 VolleyTrainer
-          </span>
+          <span className="text-xl font-black text-white tracking-tight">🏐 VolleyTrainer</span>
+          <p className="text-xs text-slate-500 mt-0.5 truncate">{orgName}</p>
         </div>
-
-        {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => (
             <Link
@@ -36,25 +55,20 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
             </Link>
           ))}
         </nav>
-
-        {/* Footer */}
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-xs font-bold">
-              C
+            <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
+              {initials}
             </div>
-            <div>
-              <p className="text-xs font-semibold text-white">Coach</p>
-              <p className="text-xs text-slate-500">Head Coach</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-white truncate">{displayName}</p>
+              <p className="text-xs text-slate-500 capitalize">{profile?.role ?? 'coach'}</p>
             </div>
+            <LogoutButton />
           </div>
         </div>
       </aside>
-
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   );
 }

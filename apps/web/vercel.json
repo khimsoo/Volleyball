@@ -1,6 +1,4 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "cd ../.. && npm run build --workspace=packages/types && npm run build --workspace=packages/utils && cd apps/web && npx next build",
-  "outputDirectory": ".next",
+  "buildCommand": "cd ../.. && npm run build --workspace=packages/types && npm run build --workspace=packages/utils && next build",
   "installCommand": "cd ../.. && npm install --legacy-peer-deps"
 }

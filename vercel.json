@@ -1,7 +1,0 @@
-{
-  "buildCommand": "npm run build --workspace=packages/types && npm run build --workspace=packages/utils && npm run build --workspace=@volleyball/web",
-  "outputDirectory": "apps/web/.next",
-  "framework": "nextjs",
-  "installCommand": "npm install --legacy-peer-deps",
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
-}

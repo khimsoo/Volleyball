@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 export default function SignupPage() {
+  console.log('SignupPage component rendered');
+
   const router = useRouter();
   const [form, setForm] = useState({
     firstName: '',

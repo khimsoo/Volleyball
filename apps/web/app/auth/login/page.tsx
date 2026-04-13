@@ -16,14 +16,28 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('Login result', { data, error });
+
+    if (error || !data.session) {
+      setError(error?.message ?? 'Login failed');
       setLoading(false);
-    } else {
-      router.push('/dashboard');
-      router.refresh();
+      return;
     }
+
+    if (data.session) {
+      const { error: setSessionError } = await supabase.auth.setSession(data.session);
+      console.log('Login setSession result', { setSessionError });
+      if (setSessionError) {
+        setError('Failed to establish session');
+        setLoading(false);
+        return;
+      }
+    }
+
+    router.push('/dashboard');
+    router.refresh();
   }
 
   return (

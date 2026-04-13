@@ -27,11 +27,15 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
 
+    console.log('Starting signup process...');
+
     // 1. Create auth user
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
     });
+
+    console.log('Signup result:', { data: !!data, user: !!data?.user, session: !!data?.session, error: signUpError });
 
     if (signUpError || !data.user) {
       setError(signUpError?.message ?? 'Signup failed');
@@ -42,20 +46,29 @@ export default function SignupPage() {
     // 2. If session was returned in signup response, set it explicitly
     // This ensures the RPC call has proper authentication context
     if (data.session) {
+      console.log('Setting session from signup response...');
       const { error: setSessionError } = await supabase.auth.setSession(data.session);
+      console.log('Session set result:', { error: setSessionError });
       if (setSessionError) {
         setError('Failed to establish session');
         setLoading(false);
         return;
       }
+    } else {
+      console.log('No session returned from signup, trying to get current session...');
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log('Current session:', { session: !!sessionData?.session, error: sessionError });
     }
 
     // 3. Bootstrap org + user profile via RPC
+    console.log('Calling bootstrap RPC...');
     const { error: rpcError } = await supabase.rpc('bootstrap_coach_organization', {
       p_first_name: form.firstName,
       p_last_name: form.lastName,
       p_org_name: form.orgName,
     });
+
+    console.log('RPC result:', { error: rpcError });
 
     if (rpcError) {
       setError(rpcError.message);
@@ -63,6 +76,7 @@ export default function SignupPage() {
       return;
     }
 
+    console.log('Signup successful, redirecting to dashboard...');
     router.push('/dashboard');
     router.refresh();
   }

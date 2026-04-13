@@ -17,6 +17,10 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Debug: Check Supabase configuration
+  console.log('Supabase URL configured:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('Supabase Key configured:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
   function set(key: string) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));

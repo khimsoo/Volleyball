@@ -26,15 +26,17 @@ export default function LoginPage() {
       return;
     }
 
-    if (data.session) {
-      const { error: setSessionError } = await supabase.auth.setSession(data.session);
-      console.log('Login setSession result', { setSessionError });
-      if (setSessionError) {
-        setError('Failed to establish session');
-        setLoading(false);
-        return;
-      }
+    const { error: setSessionError } = await supabase.auth.setSession(data.session);
+    console.log('Login setSession result', { setSessionError });
+    if (setSessionError) {
+      setError('Failed to establish session');
+      setLoading(false);
+      return;
     }
+
+    const currentSession = await supabase.auth.getSession();
+    console.log('Current session after setSession', currentSession);
+    console.log('Browser cookies after login', document.cookie);
 
     router.push('/dashboard');
     router.refresh();

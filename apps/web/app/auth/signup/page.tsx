@@ -39,7 +39,18 @@ export default function SignupPage() {
       return;
     }
 
-    // 2. Bootstrap org + user profile via RPC
+    // 2. If session was returned in signup response, set it explicitly
+    // This ensures the RPC call has proper authentication context
+    if (data.session) {
+      const { error: setSessionError } = await supabase.auth.setSession(data.session);
+      if (setSessionError) {
+        setError('Failed to establish session');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 3. Bootstrap org + user profile via RPC
     const { error: rpcError } = await supabase.rpc('bootstrap_coach_organization', {
       p_first_name: form.firstName,
       p_last_name: form.lastName,

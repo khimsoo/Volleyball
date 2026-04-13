@@ -49,6 +49,10 @@ ALTER TABLE periodization_plans ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users see own org" ON organizations
   FOR SELECT USING (id = current_org_id());
 
+-- Allow bootstrap function to insert organizations
+CREATE POLICY "Bootstrap can insert org" ON organizations
+  FOR INSERT WITH CHECK (true);
+
 -- ─── Users ───────────────────────────────────────────────────────────────────
 
 CREATE POLICY "Users see org members" ON users
@@ -56,6 +60,10 @@ CREATE POLICY "Users see org members" ON users
 
 CREATE POLICY "Users update own profile" ON users
   FOR UPDATE USING (id = auth.uid());
+
+-- Allow bootstrap function to insert users (happens during signup before user exists)
+CREATE POLICY "Bootstrap can insert user" ON users
+  FOR INSERT WITH CHECK (true);
 
 -- ─── Athlete Profiles ────────────────────────────────────────────────────────
 

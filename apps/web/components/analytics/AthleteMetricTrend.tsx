@@ -12,12 +12,10 @@ import {
 
 // recharts 2.x class components are missing the 'props' property required by React 19 JSX types.
 // Cast to any until recharts 3.x is stable.
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const XAxis = RechartXAxis as any;
 const YAxis = RechartYAxis as any;
 const Tooltip = RechartTooltip as any;
 const Line = RechartLine as any;
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 interface DataPoint {
   date: string;

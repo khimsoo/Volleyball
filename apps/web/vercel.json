@@ -1,4 +1,4 @@
 {
   "buildCommand": "cd ../.. && npm run build --workspace=packages/types && npm run build --workspace=packages/utils && cd apps/web && npx next build",
-  "installCommand": "cd ../.. && npm install --legacy-peer-deps"
+  "installCommand": "cd ../.. && npm install --legacy-peer-deps --no-audit --no-fund --no-package-lock"
 }

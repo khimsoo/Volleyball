@@ -51,19 +51,44 @@ export default function ProgramModal({ program, organizationId, onClose, onSaved
   const [error, setError] = useState('');
   const [showDrillPicker, setShowDrillPicker] = useState(false);
   const [selectedDrills, setSelectedDrills] = useState<{ id: string; name: string; skill_type: string }[]>([]);
+  const [existingDrillIds, setExistingDrillIds] = useState<string[]>([]);
 
-  // Load existing drills if editing
   useEffect(() => {
+    setSelectedDrills([]);
+    setExistingDrillIds([]);
+
     if (!program) return;
-    async function loadDrills() {
-      const { data } = await supabase
+
+    async function loadExistingDrills() {
+      const { data: weeks } = await supabase
+        .from('program_weeks')
+        .select('id')
+        .eq('program_id', program.id);
+      if (!weeks?.length) return;
+
+      const weekIds = weeks.map((week) => week.id);
+      const { data: sessions } = await supabase
+        .from('program_sessions')
+        .select('id')
+        .in('program_week_id', weekIds);
+      if (!sessions?.length) return;
+
+      const sessionIds = sessions.map((session) => session.id);
+      const { data: drills } = await supabase
         .from('program_session_drills')
         .select('drills(id, name, skill_type)')
-        .eq('program_sessions.program_weeks.program_id', program!.id);
-      // Simplified: fetch drills linked to this program via the session chain
-      // We'll handle this via a simpler direct query
+        .in('program_session_id', sessionIds);
+      if (!drills?.length) return;
+
+      const loadedDrills = (drills
+        .map((row) => row.drills)
+        .filter(Boolean) as unknown) as { id: string; name: string; skill_type: string }[];
+
+      setSelectedDrills(loadedDrills);
+      setExistingDrillIds(loadedDrills.map((drill) => drill.id));
     }
-    loadDrills();
+
+    loadExistingDrills();
   }, [program]);
 
   const handleBackdrop = useCallback(
@@ -117,35 +142,138 @@ export default function ProgramModal({ program, organizationId, onClose, onSaved
       programId = data.id;
     }
 
-    // If drills selected and new program, create a default week + session + link drills
-    if (!isEdit && selectedDrills.length > 0 && programId) {
-      const { data: week } = await supabase
-        .from('program_weeks')
-        .insert({ program_id: programId, week_number: 1 })
-        .select('id')
-        .single();
+    // If drills selected and this program has no existing drill session, create a default week + session + link drills
+    if (selectedDrills.length > 0 && programId) {
+      const newDrills = selectedDrills.filter((d) => !existingDrillIds.includes(d.id));
+      if (newDrills.length > 0) {
+        let sessionId: string | undefined;
 
-      if (week) {
-        const { data: session } = await supabase
-          .from('program_sessions')
-          .insert({
-            program_week_id: week.id,
-            day_of_week: 1,
-            session_type: 'technical',
-            name: 'Session 1',
-            estimated_duration_minutes: 60,
-          })
-          .select('id')
-          .single();
+        if (isEdit) {
+          const { data: week, error: weekQueryError } = await supabase
+            .from('program_weeks')
+            .select('id')
+            .eq('program_id', programId)
+            .order('week_number')
+            .limit(1)
+            .maybeSingle();
+          if (weekQueryError) {
+            setError(weekQueryError.message);
+            setSaving(false);
+            return;
+          }
 
-        if (session) {
-          await supabase.from('program_session_drills').insert(
-            selectedDrills.map((d, i) => ({
-              program_session_id: session.id,
+          if (!week) {
+            const { data: createdWeek, error: weekError } = await supabase
+              .from('program_weeks')
+              .insert({ program_id: programId, week_number: 1 })
+              .select('id')
+              .single();
+            if (weekError || !createdWeek) {
+              setError(weekError?.message ?? 'Failed to create program week');
+              setSaving(false);
+              return;
+            }
+
+            const { data: session, error: sessionError } = await supabase
+              .from('program_sessions')
+              .insert({
+                program_week_id: createdWeek.id,
+                day_of_week: 1,
+                session_type: 'technical',
+                name: 'Session 1',
+                estimated_duration_minutes: 60,
+              })
+              .select('id')
+              .single();
+            if (sessionError || !session) {
+              setError(sessionError?.message ?? 'Failed to create program session');
+              setSaving(false);
+              return;
+            }
+
+            sessionId = session.id;
+          } else {
+            const { data: existingSession, error: sessionQueryError } = await supabase
+              .from('program_sessions')
+              .select('id')
+              .eq('program_week_id', week.id)
+              .order('day_of_week')
+              .limit(1)
+              .maybeSingle();
+            if (sessionQueryError) {
+              setError(sessionQueryError.message);
+              setSaving(false);
+              return;
+            }
+
+            if (existingSession) {
+              sessionId = existingSession.id;
+            } else {
+              const { data: session, error: sessionError } = await supabase
+                .from('program_sessions')
+                .insert({
+                  program_week_id: week.id,
+                  day_of_week: 1,
+                  session_type: 'technical',
+                  name: 'Session 1',
+                  estimated_duration_minutes: 60,
+                })
+                .select('id')
+                .single();
+              if (sessionError || !session) {
+                setError(sessionError?.message ?? 'Failed to create program session');
+                setSaving(false);
+                return;
+              }
+
+              sessionId = session.id;
+            }
+          }
+        } else {
+          const { data: week, error: weekError } = await supabase
+            .from('program_weeks')
+            .insert({ program_id: programId, week_number: 1 })
+            .select('id')
+            .single();
+          if (weekError || !week) {
+            setError(weekError?.message ?? 'Failed to create program week');
+            setSaving(false);
+            return;
+          }
+
+          const { data: session, error: sessionError } = await supabase
+            .from('program_sessions')
+            .insert({
+              program_week_id: week.id,
+              day_of_week: 1,
+              session_type: 'technical',
+              name: 'Session 1',
+              estimated_duration_minutes: 60,
+            })
+            .select('id')
+            .single();
+          if (sessionError || !session) {
+            setError(sessionError?.message ?? 'Failed to create program session');
+            setSaving(false);
+            return;
+          }
+
+          sessionId = session.id;
+        }
+
+        if (sessionId) {
+          const { error: drillsError } = await supabase.from('program_session_drills').insert(
+            newDrills.map((d, i) => ({
+              program_session_id: sessionId,
               drill_id: d.id,
               sequence_order: i,
             })),
           );
+          if (drillsError) {
+            setError(drillsError.message);
+            setSaving(false);
+            return;
+          }
         }
       }
     }

@@ -3,22 +3,21 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import AthleteModal from '@/components/roster/AthleteModal';
+import AddAthleteModal from '@/components/roster/AddAthleteModal';
 
 interface Athlete {
   id: string;
-  user_id: string;
   first_name: string;
   last_name: string;
-  email: string;
+  email: string | null;
   primary_position: string;
   jersey_number: number | null;
+  experience_tier: string;
   height_cm: number | null;
   weight_kg: number | null;
-  experience_tier: string;
+  date_of_birth: string | null;
 }
 
-// Position color mapping
 const POSITION_COLORS: Record<string, string> = {
   setter: 'bg-purple-500/20 text-purple-400',
   libero: 'bg-yellow-500/20 text-yellow-400',
@@ -28,16 +27,30 @@ const POSITION_COLORS: Record<string, string> = {
   defensive_specialist: 'bg-pink-500/20 text-pink-400',
 };
 
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ');
+const POSITION_LABELS: Record<string, string> = {
+  setter: 'Setter',
+  libero: 'Libero',
+  outside_hitter: 'Outside Hitter',
+  opposite: 'Opposite',
+  middle_blocker: 'Middle Blocker',
+  defensive_specialist: 'DS',
+};
+
+const FILTER_TABS = ['All', 'setter', 'libero', 'outside_hitter', 'middle_blocker', 'opposite', 'defensive_specialist'];
+
+function getAge(dob: string | null): string {
+  if (!dob) return '—';
+  const diff = Date.now() - new Date(dob).getTime();
+  return String(Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)));
 }
 
 export default function RosterPage() {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [loading, setLoading] = useState(true);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>('All');
+  const [filter, setFilter] = useState('All');
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   async function loadData() {
     setLoading(true);
@@ -50,152 +63,134 @@ export default function RosterPage() {
       .eq('id', user.id)
       .single();
 
-    if (profile) {
-      setOrganizationId(profile.organization_id);
-      const { data } = await supabase
-        .from('athlete_profiles')
-        .select(`
-          id,
-          user_id,
-          primary_position,
-          jersey_number,
-          height_cm,
-          weight_kg,
-          experience_tier,
-          users:user_id(first_name, last_name, email)
-        `)
-        .eq('organization_id', profile.organization_id)
-        .is('deleted_at', null)
-        .order('jersey_number', { nullsFirst: false });
+    if (!profile) return;
+    setOrgId(profile.organization_id);
 
-      if (data) {
-        const formatted = data.map((row: any) => ({
-          id: row.id,
-          user_id: row.user_id,
-          first_name: row.users?.first_name || '',
-          last_name: row.users?.last_name || '',
-          email: row.users?.email || '',
-          primary_position: row.primary_position,
-          jersey_number: row.jersey_number,
-          height_cm: row.height_cm,
-          weight_kg: row.weight_kg,
-          experience_tier: row.experience_tier,
-        }));
-        setAthletes(formatted);
-      }
-    }
+    const { data } = await supabase
+      .from('athlete_profiles')
+      .select('id, first_name, last_name, email, primary_position, jersey_number, experience_tier, height_cm, weight_kg, date_of_birth')
+      .eq('organization_id', profile.organization_id)
+      .is('deleted_at', null)
+      .order('last_name', { ascending: true });
+
+    setAthletes(data ?? []);
     setLoading(false);
   }
 
   useEffect(() => { loadData(); }, []);
 
-  const filteredAthletes = filter === 'All'
-    ? athletes
-    : athletes.filter((a) => a.primary_position === filter.toLowerCase().replace(/ /g, '_'));
+  async function deleteAthlete(id: string) {
+    if (!confirm('Remove this athlete from the roster?')) return;
+    setDeleting(id);
+    await supabase
+      .from('athlete_profiles')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+    setDeleting(null);
+    loadData();
+  }
+
+  const displayed = filter === 'All' ? athletes : athletes.filter((a) => a.primary_position === filter);
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-black text-white">Roster</h1>
-          <p className="text-slate-400 mt-1">Manage your team athletes and profiles</p>
+          <p className="text-slate-400 mt-1">
+            {athletes.length} athlete{athletes.length !== 1 ? 's' : ''} on your team
+          </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary"
-        >
-          + Add Athlete
-        </button>
+        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Add Athlete</button>
       </div>
 
       {/* Position filter tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {['All', 'Setter', 'Libero', 'Outside Hitter', 'Middle Blocker', 'Opposite', 'DS'].map(
-          (pos) => (
-            <button
-              key={pos}
-              onClick={() => setFilter(pos)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium flex-shrink-0 transition-colors
-                         ${filter === pos
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
-                }`}
-            >
-              {pos}
-            </button>
-          ),
-        )}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {FILTER_TABS.map((pos) => (
+          <button
+            key={pos}
+            onClick={() => setFilter(pos)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filter === pos
+                ? 'bg-brand-500 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+            }`}
+          >
+            {pos === 'All' ? 'All' : POSITION_LABELS[pos] ?? pos}
+          </button>
+        ))}
       </div>
 
-      {/* Athlete list */}
       {loading ? (
-        <div className="space-y-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="card p-5 h-20 animate-pulse bg-slate-800" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="card p-5 animate-pulse h-40" />
           ))}
         </div>
-      ) : filteredAthletes.length === 0 ? (
+      ) : displayed.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="text-5xl mb-4">🏐</div>
-          <h3 className="text-lg font-bold text-white mb-2">No athletes yet</h3>
+          <h3 className="text-lg font-bold text-white mb-2">
+            {filter === 'All' ? 'No athletes yet' : `No ${POSITION_LABELS[filter] ?? filter} yet`}
+          </h3>
           <p className="text-slate-400 text-sm max-w-sm mx-auto mb-6">
-            Add athletes to your roster to start tracking their performance, training load, and
-            readiness.
+            Add athletes to your roster to start tracking their performance, training load, and readiness.
           </p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn-primary"
-          >
-            Add First Athlete
-          </button>
+          <button className="btn-primary" onClick={() => setShowModal(true)}>Add First Athlete</button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {filteredAthletes.map((athlete) => (
-            <div key={athlete.id} className="card p-5 flex items-center gap-5 hover:bg-slate-800/50 transition-colors">
-              <div className={`text-sm font-bold px-3 py-1.5 rounded-full shrink-0 ${POSITION_COLORS[athlete.primary_position] ?? 'bg-slate-700 text-slate-300'}`}>
-                {athlete.jersey_number ?? '—'}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {displayed.map((athlete) => (
+            <div key={athlete.id} className="card p-5 flex flex-col gap-3 group relative">
+              <button
+                onClick={() => deleteAthlete(athlete.id)}
+                disabled={deleting === athlete.id}
+                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all text-lg leading-none"
+                title="Remove athlete"
+              >
+                ×
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-brand-500/20 flex items-center justify-center text-lg font-bold text-brand-400 shrink-0">
+                  {athlete.first_name[0]}{athlete.last_name[0]}
+                </div>
+                <div className="min-w-0">
+                  <Link
+                    href={`/roster/${athlete.id}`}
+                    className="font-bold text-white hover:text-brand-400 transition-colors truncate block"
+                  >
+                    {athlete.first_name} {athlete.last_name}
+                  </Link>
+                  {athlete.jersey_number && (
+                    <p className="text-xs text-slate-500">#{athlete.jersey_number}</p>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <Link
-                  href={`/roster/${athlete.id}`}
-                  className="font-semibold text-white hover:text-brand-500 transition-colors"
-                >
-                  {athlete.first_name} {athlete.last_name}
-                </Link>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {capitalize(athlete.primary_position)} · {athlete.email}
-                  {athlete.height_cm && ` · ${athlete.height_cm} cm`}
-                  {athlete.weight_kg && ` · ${athlete.weight_kg} kg`}
-                </p>
-              </div>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                athlete.experience_tier === 'professional' ? 'bg-purple-500/20 text-purple-400'
-                  : athlete.experience_tier === 'national' ? 'bg-blue-500/20 text-blue-400'
-                    : athlete.experience_tier === 'collegiate' ? 'bg-green-500/20 text-green-400'
-                      : 'bg-slate-700 text-slate-400'
-              }`}>
-                {capitalize(athlete.experience_tier)}
+
+              <span
+                className={`self-start text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  POSITION_COLORS[athlete.primary_position] ?? 'bg-slate-500/20 text-slate-400'
+                }`}
+              >
+                {POSITION_LABELS[athlete.primary_position] ?? athlete.primary_position}
               </span>
+
+              <div className="flex gap-4 text-xs text-slate-400 border-t border-slate-800 pt-3 mt-auto">
+                <span>Age: <span className="text-white">{getAge(athlete.date_of_birth)}</span></span>
+                {athlete.height_cm && (
+                  <span>{athlete.height_cm} <span className="text-slate-600">cm</span></span>
+                )}
+                <span className="ml-auto capitalize text-slate-500">{athlete.experience_tier}</span>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Position legend */}
-      <div className="mt-8 flex flex-wrap gap-3">
-        {Object.entries(POSITION_COLORS).map(([pos, cls]) => (
-          <span key={pos} className={`text-xs font-semibold px-3 py-1 rounded-full ${cls}`}>
-            {pos.replace(/_/g, ' ')}
-          </span>
-        ))}
-      </div>
-
-      {/* Add Athlete Modal */}
-      {showModal && organizationId && (
-        <AthleteModal
-          athlete={null}
-          organizationId={organizationId}
+      {showModal && orgId && (
+        <AddAthleteModal
+          organizationId={orgId}
           onClose={() => setShowModal(false)}
           onSaved={loadData}
         />
@@ -203,4 +198,3 @@ export default function RosterPage() {
     </div>
   );
 }
-

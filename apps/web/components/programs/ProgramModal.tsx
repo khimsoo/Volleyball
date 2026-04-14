@@ -285,19 +285,19 @@ export default function ProgramModal({ program, organizationId, onClose, onSaved
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}
       onClick={handleBackdrop}
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-slate-800">
+      <div className="bg-slate-900 border border-slate-700 rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
+        <div className="flex items-center justify-between p-5 border-b border-slate-800">
           <h2 className="text-lg font-black text-white">
             {isEdit ? 'Edit Program' : 'New Training Program'}
           </h2>
           <button onClick={onClose} className="text-slate-500 hover:text-white text-2xl leading-none">×</button>
         </div>
 
-        <form onSubmit={handleSave} className="p-6 space-y-5">
+        <form onSubmit={handleSave} className="p-5 space-y-5">
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Program Name *</label>
@@ -325,7 +325,7 @@ export default function ProgramModal({ program, organizationId, onClose, onSaved
           </div>
 
           {/* Phase + Duration row */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Phase</label>
               <select

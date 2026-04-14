@@ -78,17 +78,17 @@ export default function MatchesPage() {
   const setsPct = totalSetsPlayed > 0 ? `${Math.round((totalSetsWon / totalSetsPlayed) * 100)}%` : '—';
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-black text-white">Match Analytics</h1>
-          <p className="text-slate-400 mt-1">Track match results and player statistics</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Match Analytics</h1>
+          <p className="text-slate-400 mt-1 text-sm sm:text-base">Track match results and player statistics</p>
         </div>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Log Match</button>
+        <button className="btn-primary shrink-0" onClick={() => setShowModal(true)}>+ Log Match</button>
       </div>
 
       {/* Season summary */}
-      <div className="grid grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {[
           { label: 'Matches Played', value: matches.length || '—' },
           { label: 'Wins', value: matches.length ? wins : '—', color: 'text-green-400' },
@@ -125,36 +125,36 @@ export default function MatchesPage() {
       ) : (
         <div className="space-y-3">
           {matches.map((match) => (
-            <div key={match.id} className="card p-5 flex items-center gap-4 group">
+            <div key={match.id} className="card p-4 sm:p-5 flex items-center gap-3 sm:gap-4 group">
               {/* Date */}
-              <div className="w-20 shrink-0 text-center">
+              <div className="w-14 sm:w-20 shrink-0 text-center">
                 <p className="text-xs text-slate-500">
                   {new Date(match.match_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                 </p>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-slate-600 hidden sm:block">
                   {new Date(match.match_date).getFullYear()}
                 </p>
               </div>
 
               {/* Result badge */}
               {match.result ? (
-                <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${RESULT_STYLES[match.result]}`}>
+                <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold shrink-0 ${RESULT_STYLES[match.result]}`}>
                   {match.result.toUpperCase()}
                 </span>
               ) : (
-                <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 bg-slate-700 text-slate-400">
+                <span className="px-2 sm:px-3 py-1 rounded-full text-xs font-bold shrink-0 bg-slate-700 text-slate-400">
                   TBD
                 </span>
               )}
 
               {/* Score */}
-              <div className="shrink-0 font-black text-white text-xl w-16 text-center">
+              <div className="shrink-0 font-black text-white text-lg sm:text-xl w-12 sm:w-16 text-center">
                 {match.sets_won}–{match.sets_lost}
               </div>
 
               {/* Match info */}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-white truncate">vs {match.opponent}</p>
+                <p className="font-semibold text-white truncate text-sm sm:text-base">vs {match.opponent}</p>
                 <p className="text-xs text-slate-400 truncate">
                   {match.competition_name} · {LEVEL_LABELS[match.competition_level] ?? match.competition_level}
                   {match.venue ? ` · ${match.venue}` : ''}
@@ -176,7 +176,7 @@ export default function MatchesPage() {
       )}
 
       {/* Stats explanation */}
-      <div className="mt-8 grid grid-cols-3 gap-4">
+      <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: 'Attack Efficiency', formula: '(Kills − Errors − Blocked) ÷ Attempts', target: '> 0.280' },
           { label: 'Reception Efficiency', formula: 'Positive Receptions ÷ Total Receptions', target: '> 65%' },

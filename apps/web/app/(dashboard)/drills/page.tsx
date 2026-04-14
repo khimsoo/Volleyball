@@ -311,12 +311,12 @@ export default function DrillLibraryPage() {
   const customCount = drills.filter((d) => d.organization_id).length;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-black text-white">Drill Library</h1>
-          <p className="text-slate-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Drill Library</h1>
+          <p className="text-slate-400 mt-1 text-sm sm:text-base">
             {loading
               ? 'Loading drills…'
               : `${systemCount} system drill${systemCount !== 1 ? 's' : ''}${
@@ -324,11 +324,11 @@ export default function DrillLibraryPage() {
                 } · Click any drill to view details & video`}
           </p>
         </div>
-        <button className="btn-primary">+ Add Drill</button>
+        <button className="btn-primary shrink-0">+ Add Drill</button>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
         <input
           type="text"
           placeholder="Search drills…"
@@ -338,27 +338,29 @@ export default function DrillLibraryPage() {
                      text-white placeholder:text-slate-500 text-sm focus:outline-none
                      focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
-        <select
-          value={skillFilter}
-          onChange={(e) => setSkillFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300"
-        >
-          <option value="">All Skills</option>
-          {['serving', 'passing', 'setting', 'attacking', 'blocking', 'defense',
-            'conditioning', 'strength', 'mobility'].map((s) => (
-            <option key={s} value={s}>{capitalize(s)}</option>
-          ))}
-        </select>
-        <select
-          value={difficultyFilter}
-          onChange={(e) => setDifficultyFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300"
-        >
-          <option value="">All Levels</option>
-          {['beginner', 'intermediate', 'advanced', 'elite'].map((d) => (
-            <option key={d} value={d}>{capitalize(d)}</option>
-          ))}
-        </select>
+        <div className="flex gap-3">
+          <select
+            value={skillFilter}
+            onChange={(e) => setSkillFilter(e.target.value)}
+            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300"
+          >
+            <option value="">All Skills</option>
+            {['serving', 'passing', 'setting', 'attacking', 'blocking', 'defense',
+              'conditioning', 'strength', 'mobility'].map((s) => (
+              <option key={s} value={s}>{capitalize(s)}</option>
+            ))}
+          </select>
+          <select
+            value={difficultyFilter}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
+            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300"
+          >
+            <option value="">All Levels</option>
+            {['beginner', 'intermediate', 'advanced', 'elite'].map((d) => (
+              <option key={d} value={d}>{capitalize(d)}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Drill list */}

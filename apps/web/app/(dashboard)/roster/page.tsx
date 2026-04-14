@@ -93,15 +93,15 @@ export default function RosterPage() {
   const displayed = filter === 'All' ? athletes : athletes.filter((a) => a.primary_position === filter);
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-black text-white">Roster</h1>
-          <p className="text-slate-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Roster</h1>
+          <p className="text-slate-400 mt-1 text-sm sm:text-base">
             {athletes.length} athlete{athletes.length !== 1 ? 's' : ''} on your team
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Add Athlete</button>
+        <button className="btn-primary shrink-0" onClick={() => setShowModal(true)}>+ Add Athlete</button>
       </div>
 
       {/* Position filter tabs */}

@@ -85,21 +85,21 @@ export default function AddMatchModal({ organizationId, onClose, onSaved }: Prop
   const preview = computeResult(setsWon, setsLost);
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 rounded-2xl w-full max-w-lg border border-slate-700 shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-slate-800">
+    <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      <div className="bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full max-w-lg border border-slate-700 shadow-2xl">
+        <div className="flex items-center justify-between p-5 border-b border-slate-800">
           <h2 className="text-lg font-bold text-white">Log Match</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl leading-none">×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto max-h-[85dvh]">
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg p-3">
               {error}
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1">Match Date *</label>
               <input
@@ -135,7 +135,7 @@ export default function AddMatchModal({ organizationId, onClose, onSaved }: Prop
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1">Competition Name *</label>
               <input

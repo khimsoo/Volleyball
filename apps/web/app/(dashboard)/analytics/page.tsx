@@ -1,13 +1,13 @@
 export default function AnalyticsPage() {
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-white">Team Analytics</h1>
-        <p className="text-slate-400 mt-1">Aggregate performance data across your roster</p>
+    <div className="p-4 sm:p-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-black text-white">Team Analytics</h1>
+        <p className="text-slate-400 mt-1 text-sm sm:text-base">Aggregate performance data across your roster</p>
       </div>
 
       {/* ACWR Overview */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <div className="card p-5">
           <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">Load Distribution</p>
           <div className="space-y-2">
@@ -44,8 +44,8 @@ export default function AnalyticsPage() {
       {/* Position benchmarks */}
       <div>
         <h2 className="text-lg font-bold text-white mb-4">Position Benchmarks</h2>
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="card overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="border-b border-slate-800">
                 <th className="text-left px-4 py-3 text-slate-400 font-semibold">Position</th>

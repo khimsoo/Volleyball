@@ -74,11 +74,11 @@ export default function ProgramsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-black text-white">Training Programs</h1>
-          <p className="text-slate-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Training Programs</h1>
+          <p className="text-slate-400 mt-1 text-sm sm:text-base">
             {loading
               ? 'Loading…'
               : `${programs.length} program${programs.length !== 1 ? 's' : ''} · Build periodized plans and assign drills`}
@@ -86,7 +86,7 @@ export default function ProgramsPage() {
         </div>
         <button
           onClick={() => { setSelectedProgram(null); setShowModal(true); }}
-          className="btn-primary"
+          className="btn-primary shrink-0"
         >
           + New Program
         </button>
@@ -115,38 +115,42 @@ export default function ProgramsPage() {
       ) : (
         <div className="space-y-3">
           {programs.map((p) => (
-            <div key={p.id} className="card p-5 flex items-center gap-5 hover:bg-slate-800/50 transition-colors">
-              <div className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${PHASE_STYLES[p.phase] ?? 'bg-slate-700 text-slate-300'}`}>
-                {capitalize(p.phase)}
+            <div key={p.id} className="card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:bg-slate-800/50 transition-colors">
+              <div className="flex items-center gap-3 sm:contents">
+                <div className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${PHASE_STYLES[p.phase] ?? 'bg-slate-700 text-slate-300'}`}>
+                  {capitalize(p.phase)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-white">{p.name}</h3>
+                  <p className="text-xs text-slate-400 mt-0.5 truncate">
+                    {p.duration_weeks}w · {p.sessions_per_week}×/week
+                    {p.target_positions.length > 0 && ` · ${p.target_positions.map(capitalize).join(', ')}`}
+                    {p.description && ` · ${p.description}`}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-white">{p.name}</h3>
-                <p className="text-xs text-slate-400 mt-0.5 truncate">
-                  {p.duration_weeks}w · {p.sessions_per_week}×/week
-                  {p.target_positions.length > 0 && ` · ${p.target_positions.map(capitalize).join(', ')}`}
-                  {p.description && ` · ${p.description}`}
-                </p>
-              </div>
-              {p.is_template && (
-                <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full shrink-0">Template</span>
-              )}
-              {p.published_at
-                ? <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full shrink-0">Published</span>
-                : <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full shrink-0">Draft</span>
-              }
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => { setSelectedProgram(p); setShowModal(true); }}
-                  className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-700 transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(p.id)}
-                  className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
-                >
-                  Delete
-                </button>
+              <div className="flex items-center gap-2 flex-wrap sm:contents">
+                {p.is_template && (
+                  <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full shrink-0">Template</span>
+                )}
+                {p.published_at
+                  ? <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full shrink-0">Published</span>
+                  : <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full shrink-0">Draft</span>
+                }
+                <div className="flex items-center gap-2 ml-auto sm:ml-0 shrink-0">
+                  <button
+                    onClick={() => { setSelectedProgram(p); setShowModal(true); }}
+                    className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}

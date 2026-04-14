@@ -129,6 +129,33 @@ CREATE POLICY "Org sees program session drills" ON program_session_drills
     )
   );
 
+CREATE POLICY "Staff manage program weeks" ON program_weeks
+  FOR ALL USING (
+    program_id IN (SELECT id FROM training_programs WHERE organization_id = current_org_id())
+    AND is_staff()
+  );
+
+CREATE POLICY "Staff manage program sessions" ON program_sessions
+  FOR ALL USING (
+    program_week_id IN (
+      SELECT pw.id FROM program_weeks pw
+      JOIN training_programs tp ON tp.id = pw.program_id
+      WHERE tp.organization_id = current_org_id()
+    )
+    AND is_staff()
+  );
+
+CREATE POLICY "Staff manage program session drills" ON program_session_drills
+  FOR ALL USING (
+    program_session_id IN (
+      SELECT ps.id FROM program_sessions ps
+      JOIN program_weeks pw ON pw.id = ps.program_week_id
+      JOIN training_programs tp ON tp.id = pw.program_id
+      WHERE tp.organization_id = current_org_id()
+    )
+    AND is_staff()
+  );
+
 -- ─── Training Sessions ───────────────────────────────────────────────────────
 
 CREATE POLICY "Org sees training sessions" ON training_sessions
